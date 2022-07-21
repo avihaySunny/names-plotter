@@ -1,166 +1,167 @@
 import './App.css';
 import React, {useEffect, useState} from "react";
 import { Chart as ChartJS, registerables } from 'chart.js';
-import {NAMES_DATA_ARRAY} from "./datasets/names-data";
 import { Line } from "react-chartjs-2";
 import { ReactComponent as DeleteIcon } from './delete.svg';
+import ReactSelect from 'react-select';
+import {JEWISH_MEM} from "./datasets/jmen";
+import {JEWISH_WOMEN} from "./datasets/jwomen";
+import { MMEN } from "./datasets/mmen";
+import {M_WOMEN} from "./datasets/mwomen";
+import AsyncSelect from "react-select/async";
 
 ChartJS.register(...registerables);
 
 const range = (start, end) => Array(end - start + 1).fill().map((_, idx) => start + idx)
 
-const getRandomName = () => {
-  const index = Math.floor(Math.random() * NAMES_DATA_ARRAY.length);
-  return NAMES_DATA_ARRAY[index].names;
+const getRandomDatasheet = () => {
+  const index = Math.floor(Math.random()*selectOptions.length);
+  return selectOptions[index];
 }
 
 const getRandombckColor = () => {
   return `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`
 }
+
+const selectOptions = [
+  {
+    label: 'יהודים',
+    value: 1,
+    dataset: JEWISH_MEM,
+  },
+  {
+    label: 'יהודיות',
+    value: 2,
+    dataset: JEWISH_WOMEN,
+  },
+  {
+    label: 'מוסלמים',
+    value: 3,
+    dataset: MMEN,
+  },
+  {
+    label: 'מוסלמיות',
+    value: 4,
+    dataset: M_WOMEN,
+  },
+
+]
 const parseYearValue = yearValue => {
+  if (yearValue.includes(',')) {
+    const value = yearValue.replaceAll(',', '');
+    return parseInt(value);
+  }
   if (yearValue === ".") return 0;
   if(yearValue === "..") return Math.floor(Math.random() * 4);
-  return yearValue;
+  return parseInt(yearValue);
 }
+
+const labels = range(1948, 2021);
 
 const createDataFromRow = row => {
-  const data = {
-    x: [],
-    y: [],
-    name: row.names,
+  const y = labels.map(year => parseYearValue(row[year]));
+  return ({
+    y,
+    name: row.name,
     total: row.total,
-  };
-  const years = range(1948, 2021);
-  years.forEach(year => {
-    data.y.push(parseYearValue(row[year]));
-    data.x.push(year);
   });
-
-  return data;
 }
 
-
-
 function App() {
-  const [data, setData] = useState({
-    labels: [],
-    datasets: [],
-  });
+  const [datasets, setDatasets] = useState([]);
+  const randomDatasheet = getRandomDatasheet();
+  const [datasheet, setDatasheet] = useState(randomDatasheet);
+  const [selectedName, setSelectedName] = useState({});
 
-  const [searchValue, setSearchValue] = useState(getRandomName());
-
-  const getRowByName = name => {
-    const row = NAMES_DATA_ARRAY.find(item => item.names === name);
-    return row;
+  const createDefaultOptions = () => {
+    return datasheet.dataset.slice(0,10).map((item, index) => ({
+      label: item.name,
+      value: index,
+    }));
   }
 
-  const updateDataset = (name) => {
-    const rowData = getRowByName(name);
-    let plotData;
-    if (rowData) {
-      const data = createDataFromRow(rowData);
-      const color = getRandombckColor();
-      plotData = {
-        labels: data.x,
-        total: data.total,
-        datasets: [
-          {
-            label: data.name,
-            data: data.y,
-            borderColor: color,
-            backgroundColor: color,
-          }
-        ]
+  const [defaultOptions, setDefOptions] = useState(createDefaultOptions());
+  const getRowDataByName = () => {
+    const row = datasheet.dataset.find(item => item.name === selectedName.label);
+    return createDataFromRow(row);
+  }
+
+  const addDataSet = () => {
+    const newDataset = getRowDataByName();
+    const color = getRandombckColor();
+    setDatasets(prev => [
+      ...prev, {
+        label: newDataset.name,
+        data: newDataset.y,
+        borderColor: color,
+        backgroundColor: color,
       }
-    }
-    setData(plotData);
+    ]);
   }
-
-  const onRandomNameClick = () => {
-    const randomName = getRandomName();
-    addDataSet(randomName);
-    setSearchValue(randomName);
-  }
-
-  const addDataSet = (name) => {
-    const updateData = Object.assign({}, data);
-    const rowData = getRowByName(name);
-    const parsedData = createDataFromRow(rowData);
-    if (rowData) {
-      const color = getRandombckColor();
-      updateData.datasets = [
-        ...data.datasets,
-        {
-          label: parsedData.name,
-          data: parsedData.y,
-          borderColor: color,
-          backgroundColor: color,
-        }
-      ];
-      setData(updateData);
-    }
-  }
-
-  const onClear = () => {
-    setSearchValue('');
-    setData(prev => {
-      const updated = Object.assign({}, prev);
-      updated.datasets = [];
-      updated.total = undefined;
-      return updated;
-    });
-  }
-
-  useEffect(() => updateDataset(searchValue), []);
   useEffect(() => {
     document.title = 'שמות בישראל';
   }, []);
 
-  const isPlotDisabled = () => {
-    if (!searchValue || !getRowByName(searchValue)) {
-      return true;
+  const onLoadOptions = searchQuery => {
+    if (searchQuery) {
+      const names = datasheet.dataset.map(item => item.name);
+      const matching = names.filter(name => name.startsWith(searchQuery)).slice(0, 10).map((item, i) => ({
+        label: item,
+        value: i,
+      }));
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(matching)
+        }, 100);
+      })
     }
-    const names = data?.datasets?.map(item => item.label);
-    if (names?.includes(searchValue)) {
-      return true;
-    };
-    return false;
-  }
+    return Promise.reject();
+  };
+
+  useEffect(() => {
+    const defaultOptions = createDefaultOptions();
+    setDefOptions(defaultOptions);
+    setSelectedName(defaultOptions[Math.floor(Math.random() * 9)])
+  }, [datasheet]);
+
+  const isAddDisabled = () => datasets?.map(item => item.label)?.includes(selectedName.label);
 
   return (
-    <div className="App">
-      <div className="main-view">
+    <div className="main-view">
+      <div className="plot-and-search">
         <div className="search-input">
-          <input
-          value={searchValue}
-          onChange={e => setSearchValue(e.target.value)}
-          />
-          <button disabled={isPlotDisabled()} onClick={() => addDataSet(searchValue)}>
-            Plot
-          </button>
-          <button onClick={onRandomNameClick}>
-            Plot Random
-          </button>
-          <div title="נקה את הרשימה" className="clear-icon" onClick={onClear}>
-            <DeleteIcon />
-          </div>
+        <AsyncSelect
+          defaultOptions={defaultOptions}
+          value={selectedName}
+          loadOptions={onLoadOptions}
+          onChange={setSelectedName}
+          className="name-select"
+          isRtl
+        />
+        <ReactSelect
+          options={selectOptions}
+          value={datasheet}
+          onChange={setDatasheet}
+          isRtl
+          className="data-select"
+        />
+        <button disabled={isAddDisabled()}onClick={addDataSet}>
+          Plot
+        </button>
+        <div title="נקה את הרשימה" className="clear-icon" onClick={() => setDatasets([])}>
+          <DeleteIcon />
         </div>
-          {data ?
-            <div className="plot-wrapper">
-              {/*<div className="total-row-wrapper">*/}
-              {/*  <div className="value">{data?.total}</div>*/}
-              {/*  <div className="text">סה"כ בין 1948 - 2021</div>*/}
-              {/*</div>*/}
-              <Line
-                className="plot"
-                datasetIdKey='id'
-                data={data}
-              />
-            </div> :
-            <div>
-               אין שם כזה סורי
-            </div>
-          }
+      </div>
+      <div className="plot-wrapper">
+        <Line
+          className="plot"
+          datasetIdKey='id'
+          data={{
+            labels,
+            datasets,
+          }}
+        />
+      </div>
       </div>
     </div>
   );
