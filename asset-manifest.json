@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/name-plotter/static/css/main.7c68d1c4.css",
+    "main.js": "/name-plotter/static/js/main.37e7b6e1.js",
+    "index.html": "/name-plotter/index.html",
+    "static/media/delete.svg": "/name-plotter/static/media/delete.0f0c406867548499a5f9848b09cd99cd.svg",
+    "main.7c68d1c4.css.map": "/name-plotter/static/css/main.7c68d1c4.css.map",
+    "main.37e7b6e1.js.map": "/name-plotter/static/js/main.37e7b6e1.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.7c68d1c4.css",
+    "static/js/main.37e7b6e1.js"
+  ]
+}
