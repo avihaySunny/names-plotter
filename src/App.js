@@ -73,30 +73,22 @@ function App() {
   const [datasheet, setDatasheet] = useState(randomDatasheet);
   const [selectedName, setSelectedName] = useState({});
 
-  const createDefaultOptions = () => {
-    return datasheet.dataset.slice(0,10).map((item, index) => ({
-      label: item.name,
-      value: index,
-    }));
-  }
-
-  const [defaultOptions, setDefOptions] = useState(createDefaultOptions());
-  const getRowDataByName = () => {
-    const row = datasheet.dataset.find(item => item.name === selectedName.label);
-    return createDataFromRow(row);
-  }
+  const [defaultOptions, setDefOptions] = useState([]);
 
   const addDataSet = () => {
-    const newDataset = getRowDataByName();
-    const color = getRandombckColor();
-    setDatasets(prev => [
-      ...prev, {
-        label: newDataset.name,
-        data: newDataset.y,
-        borderColor: color,
-        backgroundColor: color,
-      }
-    ]);
+    debugger
+    if (selectedName.label) {
+      const newDataset = createDataFromRow(datasheet.dataset.find(item => item.name === selectedName.label))
+      const color = getRandombckColor();
+      setDatasets(prev => [
+        ...prev, {
+          label: newDataset.name,
+          data: newDataset.y,
+          borderColor: color,
+          backgroundColor: color,
+        }
+      ]);
+    }
   }
   useEffect(() => {
     document.title = 'שמות בישראל';
@@ -119,18 +111,28 @@ function App() {
   };
 
   useEffect(() => {
+     const createDefaultOptions = () => {
+      return datasheet.dataset.slice(0,10).map((item, index) => ({
+        label: item.name,
+        value: index,
+      }));
+    }
     const defaultOptions = createDefaultOptions();
     setDefOptions(defaultOptions);
     setSelectedName(defaultOptions[Math.floor(Math.random() * 9)])
+    // eslint-disable-next-line
   }, [datasheet]);
 
-  const isAddDisabled = () => datasets?.map(item => item.label)?.includes(selectedName.label);
-
+  // eslint-disable-next-line
+  useEffect(addDataSet, [selectedName]);
   return (
     <div className="main-view">
       <div className="plot-and-search">
         <div className="search-input">
-        <AsyncSelect
+          <div title="נקה את הרשימה" className="clear-icon" onClick={() => setDatasets([])}>
+            <DeleteIcon />
+          </div>
+          <AsyncSelect
           defaultOptions={defaultOptions}
           value={selectedName}
           loadOptions={onLoadOptions}
@@ -138,19 +140,13 @@ function App() {
           className="name-select"
           isRtl
         />
-        <ReactSelect
+          <ReactSelect
           options={selectOptions}
           value={datasheet}
           onChange={setDatasheet}
           isRtl
           className="data-select"
         />
-        <button disabled={isAddDisabled()}onClick={addDataSet}>
-          Plot
-        </button>
-        <div title="נקה את הרשימה" className="clear-icon" onClick={() => setDatasets([])}>
-          <DeleteIcon />
-        </div>
       </div>
       <div className="plot-wrapper">
         <Line

@@ -41,62 +41,28 @@
   font-size: 25px;
 }
 
-.total-row-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.total-row-wrapper .text {
-  margin: 20px;
-  font-size: 25px
-}
-.total-row-wrapper .value {
-  padding: 10px;
-  border-radius: 5px;
-  background-color: #A8EBE0;
-  font-size: 25px
-}
-
-button {
-  border-radius: 5px;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  border: none;
-  cursor: pointer;
-  overflow: hidden;
-  outline: none;
-  margin: 0 10px;
-}
-button:hover {
-  background-color: #405b92;
-}
 .plot {
   background-color: white;
   border: 1px solid #cccccc;
   width: 75vw;
   height: 50vh;
 }
-.name-select,.data-select {
-  cursor: pointer;
-}
-.name-select {
+
+.name-select, .data-select {
   width: 250px;
-  margin: 0 10px
+  margin: 0 5px
 }
-.data-select {
-  width: 250px;
-}
+
 .clear-icon {
   display: flex;
   align-items: center;
   font-size: 15px;
-  border: 1px solid #cccccc;
   padding: 0 5px;
+  margin-right: 5px;
   border-radius: 2px;
   cursor: pointer;
 }
 .clear-icon:hover {
-  background-color: #405b92;
+  background-color: rgba(64, 146, 127, 0.53);
   color: white
 }
