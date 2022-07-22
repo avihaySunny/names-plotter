@@ -24,7 +24,7 @@
 .main-view {
   padding: 30px 0;
   min-height: 100vh;
-  background-image: linear-gradient(to right, rgb(242, 112, 156), rgb(255, 148, 114));
+  background-image: linear-gradient(to right, rgb(131, 171, 163), rgb(114, 227, 255));
 }
 
 .search-input {
